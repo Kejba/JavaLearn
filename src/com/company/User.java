@@ -8,20 +8,31 @@ import java.util.Scanner;
  * Created By kejba on 29.02.2020
  * to change this template go to Settings -> Editor -> File and Code Templates -> Class
  **/
-public class Admin {
+
+public class User {
     private String login;
     private String password;
+    private String registeredDate;
 
-    public Admin() {
-        login = "admin";
-        password = "admin";
+    public User() {
     }
 
-    public void Login() {
+    public User(String login, String password) {
+        this.login = login;
+        this.password = password;
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        registeredDate = LocalDateTime.now().format(format);
+    }
+
+    public void login() {
         checkLogin();
         checkPassword();
         System.out.println("Zalogowano poprawnie");
         showMenu();
+    }
+
+    public String getLogin() {
+        return login;
     }
 
     private void checkLogin() {
@@ -42,7 +53,7 @@ public class Admin {
         } while (wrongLoginCount < 3);
         if (wrongLoginCount == 3) {
             System.out.println("3 nieudane wprowadzenie. Konto zablokowane");
-            System.exit(-1);
+            System.exit(1);
         }
     }
 
@@ -64,7 +75,7 @@ public class Admin {
         } while (wrongPasswordCount < 3);
         if (wrongPasswordCount == 3) {
             System.out.println("3 nieudane wprowadzenie. Konto zablokowane");
-            System.exit(-1);
+            System.exit(1);
         }
     }
 
@@ -80,8 +91,10 @@ public class Admin {
             System.out.println("Czy na pewno chcesz wyjsc? (Y/N)");
             Scanner sc = new Scanner(System.in);
             char decision = sc.next().charAt(0);
-            switch (Character.toUpperCase(decision)) {
+            decision = Character.toUpperCase(decision);
+            switch (decision) {
                 case 'Y': {
+                    System.out.println("Do widzenia");
                     System.exit(0);
                 }
                 case 'N': {
@@ -132,11 +145,45 @@ public class Admin {
         System.out.println("Twoje haslo: " + password);
     }
 
+    private void addUser() {
+        String login, password;
+
+        System.out.println("Podaj login: ");
+        Scanner sc = new Scanner(System.in);
+        login = sc.nextLine().trim();
+
+        boolean contains = UserList.usersLogins.contains(login);
+        if (!contains) {
+            System.out.println("Podany login jest wolny");
+            System.out.println("Podaj hasło: ");
+            password = sc.nextLine().trim();
+
+            User user = new User(login, password);
+            UserList.usersList.add(user);
+            UserList.usersLogins.add(login);
+        } else {
+            System.out.println("Podany login jest juz zajety. Sprobuj ponownie");
+            addUser();
+        }
+    }
+
+    private void showUsersList() {
+        if (UserList.usersList.isEmpty()) {
+            System.out.println("Lista jest pusta");
+        } else {
+            System.out.println("Lista uzytkownikow");
+            for (int i = 0; i < UserList.usersList.size(); i++) {
+                System.out.printf("User %d, login: %s, zarejestrowany: %s%n", i + 1, UserList.usersList.get(i).login, UserList.usersList.get(i).registeredDate);
+            }
+        }
+    }
+
     private void showMenu() {
         while (true) {
             showCurrentDate();
             System.out.println("Wybierz akcje:");
-            //System.out.println("1. Dodaj uzytkownika");
+            System.out.println("1. Dodaj uzytkownika");
+            System.out.println("2. Wyswietl liste uzytkownikow");
             System.out.println("7. Pokaz aktualne haslo");
             System.out.println("8. Zmien haslo");
             System.out.println("9. Wyloguj");
@@ -146,29 +193,26 @@ public class Admin {
             int choice = sc.nextInt();
 
             switch (choice) {
-                case 0: {
+                case 0:
                     finishProgram();
-                }
-                case 1: {
-
+                case 1:
+                    addUser();
                     break;
-                }
-                case 7: {
+                case 2:
+                    showUsersList();
+                    break;
+                case 7:
                     showPassword();
                     break;
-                }
-                case 8: {
+                case 8:
                     changePassword();
                     break;
-                }
-                case 9: {
+                case 9:
                     System.out.println("Wylogowano poprawnie");
-                    Login();
-                }
-                default: {
-                    System.out.println("Niepoprawny wybor");
+                    login();
                     break;
-                }
+                default:
+                    System.out.println("Niepoprawny wybor");
             }
         }
     }
